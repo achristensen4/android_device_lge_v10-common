@@ -217,10 +217,7 @@ on boot
     setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
     setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
     setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
-    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
-    setprop net.tcp.buffersize.evdo    4094,87380,524288,4096,16384,262144
-
+    
 #   Assign TCP buffer thresholds to be ceiling value of technology maximums
 #   Increased technology maximums should be reflected here.
     write /proc/sys/net/core/rmem_max  8388608
@@ -279,7 +276,7 @@ on boot
 
     # Set the console loglevel to < KERN_INFO
     # Set the default message loglevel to KERN_INFO
-    # write /proc/sys/kernel/printk "6 6 1 7"
+    write /proc/sys/kernel/printk "6 6 1 7"
 
     # Allow access for CCID command/response timeout configuration
     chown system system /sys/module/ccid_bridge/parameters/bulk_msg_timeout
@@ -302,17 +299,13 @@ on boot
     #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default  4096,87380,110208,4096,16384,110208
     setprop net.tcp.buffersize.wifi     524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.ethernet 524288,1048576,3145728,524288,1048576,2097152
     setprop net.tcp.buffersize.lte      524288,1048576,2097152,262144,524288,1048576
     setprop net.tcp.buffersize.umts     58254,349525,1048576,58254,349525,1048576
     setprop net.tcp.buffersize.hspa     40778,244668,734003,16777,100663,301990
     setprop net.tcp.buffersize.hsupa    40778,244668,734003,16777,100663,301990
     setprop net.tcp.buffersize.hsdpa    61167,367002,1101005,8738,52429,262114
     setprop net.tcp.buffersize.hspap    122334,734003,2202010,32040,192239,576717
-    setprop net.tcp.buffersize.edge     4093,26280,70800,4096,16384,70800
-    setprop net.tcp.buffersize.gprs     4092,8760,48000,4096,8760,48000
-    setprop net.tcp.buffersize.evdo     4094,87380,262144,4096,16384,262144
-
+    
     # Define default initial receive window size in segments.
     setprop net.tcp.default_init_rwnd 60
 
@@ -417,10 +410,6 @@ on boot
     chown system system /sys/class/graphics/fb0/aod
 # End AOD Display new Feature
 
-# Begin fake U2 New Feature
-    chown system system /sys/class/graphics/fb0/fake_u2
-# End fake U2 new Feature
-
 # Begin Dual Backlight Display New Feature
     chown system system /sys/class/leds/lcd-backlight-ex/brightness
     chmod 644 /sys/class/leds/lcd-backlight-ex/brightness
@@ -488,27 +477,6 @@ on property:ril.lge.touch.callstate=2
    chown root system /sys/module/charger_controller/parameters/quick_charging_state
    chmod 0664 /sys/module/charger_controller/parameters/quick_charging_state
 
-# Power_BSP, add critical temp property for PM8992
-   on property:persist.service.criticaltemp=0
-   write /sys/kernel/debug/spmi/spmi-0/address 0x00867
-   write /sys/kernel/debug/spmi/spmi-0/data 0x80
-   write /sys/kernel/debug/spmi/spmi-0/address 0x20867
-   write /sys/kernel/debug/spmi/spmi-0/data 0x80
-   write /sys/module/msm_thermal/parameters/reset_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone2/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone3/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone4/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone5/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone6/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone7/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone8/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone9/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone10/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone11/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone12/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone13/ctrl_crit_temp 0
-   write /sys/devices/virtual/thermal/thermal_zone14/ctrl_crit_temp 0
-
 on post-fs
 
     # for OOBE and PackageManager to access fotaBoot
@@ -551,7 +519,7 @@ on post-fs-data
 
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
-    setprop ro.crypto.fuse_sdcard true
+    setprop ro.crypto.fuse_sdcard false
 
     mkdir /data/misc/ipa 0700 net_admin net_admin
 
@@ -604,7 +572,7 @@ on post-fs-data
 
     #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
     mkdir /data/system 0775 system system
-    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
+    symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
 
     #make factory test result directory
     mkdir /sns/fingerprint 0775 system system 
@@ -694,13 +662,11 @@ on post-fs-data
 
 service ssr_setup /system/bin/ssr_setup
     oneshot
-    disabled
 
 service ss_ramdump /system/bin/subsystem_ramdump
     class main
     user system
     group system
-    disabled
 
 on property:persist.sys.ssr.restart_level=*
     start ssr_setup
@@ -710,7 +676,7 @@ on property:persist.sys.ssr.enable_ramdumps=1
     start ss_ramdump
 
 on property:persist.sys.ssr.enable_ramdumps=0
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 0
+    write /sys/module/subsystem_restart/parameters/enable_ramdumps 1
 
 on property:sys.boot_completed=1
     write /dev/kmsg "Boot completed "
@@ -723,7 +689,7 @@ on property:init.svc.wpa_supplicant=stopped
 
 on property:bluetooth.isEnabled=true
     start btwlancoex
-    write /sys/class/bluetooth/hci0/idle_timeout 7000
+    write /sys/class/bluetooth/hci0/idle_timeout 0
 
 on property:bluetooth.sap.status=running
     start bt-sap
@@ -772,7 +738,6 @@ service irsc_util /system/bin/irsc_util "/etc/sec_config"
 service rmt_storage /system/bin/rmt_storage
     class core
     user root
-    disabled
 
 service rfs_access /system/bin/rfs_access
    class core
@@ -786,10 +751,9 @@ on property:wc_transport.start_hci=false
     stop start_hci_filter
 
 service start_hci_filter /system/bin/wcnss_filter
-    class late_start
+    class main
     user root
     group bluetooth qcom_diag net_bt_stack
-    disabled
 
 on property:bluetooth.hciattach=true
     start hciattach
@@ -798,50 +762,44 @@ on property:bluetooth.hciattach=false
     setprop bluetooth.status off
 
 service hciattach_ath3k /system/bin/sh /system/etc/init.ath3k.bt.sh
-     class late_start
+     class main
      user bluetooth
      group system bluetooth net_bt_admin misc
-     disabled
      oneshot
 
 service bt-dun /system/bin/dun-server /dev/smd7 /dev/rfcomm0
-    class late_start
+    class main
     user bluetooth
     group bluetooth net_bt_admin inet
-    disabled
     oneshot
 
 service bt-sap /system/bin/sapd 15
     user bluetooth
     group bluetooth net_bt_admin
-    class late_start
-    disabled
+    class main
     oneshot
 
 service btpd /system/bin/btpd
-  class late_start
+  class main
   user system
   group system input
 
 service btsnoop /system/bin/btsnoop
    user bluetooth
    group bluetooth net_bt_admin sdcard_rw sdcard_r
-   class late_start
-   disabled
+   class main
    oneshot
 
 service ftmd /system/bin/logwrapper /system/bin/ftmdaemon
-    class late_start
+    class main
     user root
     group bluetooth net_bt_admin misc net_bt_stack qcom_diag net_bt_stack
-    disabled
     oneshot
 
 service port-bridge /system/bin/port-bridge /dev/mhi_pipe_32 /dev/ttyGS0
     class main
     user radio system
     group radio system inet
-    disabled
 
 # QMUX must be in multiple groups to support external process connections
 service qmuxd /system/bin/qmuxd
@@ -855,10 +813,9 @@ service netmgrd /system/bin/netmgrd
 
 service qti /system/vendor/bin/qti
     class main
-    disabled
 
 service sensors /system/bin/sensors.qcom
-    class late_start
+    class main
     user root
     group root
 
@@ -872,109 +829,90 @@ on property:ro.data.large_tcp_window_size=true
     write /proc/sys/net/ipv4/tcp_adv_win_scale  2
 
 service btwlancoex /system/bin/sh /system/etc/init.qcom.coex.sh
-    class late_start
+    class main
     user bluetooth
     group bluetooth net_bt_admin inet net_admin net_raw
-    disabled
     oneshot
     
 service btpd /system/bin/btpd
-  class late_start
+  class main
   user system
   group system input
 
 service amp_init /system/bin/amploader -i
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 service amp_load /system/bin/amploader -l 7000
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 service amp_unload /system/bin/amploader -u
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 service dhcpcd_wlan0 /system/bin/dhcpcd -ABKLG
-    class late_start
-    disabled
+    class main
     oneshot
 
 service dhcpcd_p2p /system/bin/dhcpcd -ABKLG
-    class late_start
-    disabled
+    class main
     oneshot
 
 service iprenew_wlan0 /system/bin/dhcpcd -n
-    class late_start
-    disabled
+    class main
     oneshot
 
 service iprenew_p2p /system/bin/dhcpcd -n
-    class late_start
-    disabled
+    class main
     oneshot
 
 service ptt_socket_app /system/bin/ptt_socket_app -d
     class main
     user root
     group root
-    disabled
     oneshot
 
 service ptt_ffbm /system/bin/ptt_socket_app -f -d
     user root
     group root
-    disabled
     oneshot
 
 service ftm_ffbm /system/bin/ftmdaemon
     user root
     group root
-    disabled
     oneshot
 
 service dhcpcd_bt-pan /system/bin/dhcpcd -BKLG
-    class late_start
-    disabled
+    class main
     oneshot
 
 service iprenew_bt-pan /system/bin/dhcpcd -n
-    class late_start
-    disabled
+    class main
     oneshot
 
 service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
-    disabled
     oneshot
 
 service dhcpcd_bnep1 /system/bin/dhcpcd -BKLG
-    disabled
     oneshot
 
 service dhcpcd_bnep2 /system/bin/dhcpcd -BKLG
-    disabled
     oneshot
 
 service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
-    disabled
     oneshot
 
 service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
-    disabled
     oneshot
 
 service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
-    class late_start
+    class main
     user root
     group system
-    disabled
     oneshot
 
 on property:crypto.driver.load=1
@@ -982,9 +920,8 @@ on property:crypto.driver.load=1
      insmod /system/lib/modules/qcedev.ko
 
 service drmdiag /system/bin/drmdiagapp
-    class late_start
+    class main
      user root
-     disabled
      oneshot
 
 on property:drmdiag.load=1
@@ -994,20 +931,18 @@ on property:drmdiag.load=0
     stop drmdiag
 
 service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 on property:sys.boot_completed=1
     start qcom-post-boot
 
 service hostapd /system/bin/hostapd -dd /data/hostapd/hostapd.conf
-    class late_start
+    class main
     user root
     group root
     oneshot
-    disabled
 
 on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
@@ -1016,7 +951,6 @@ on property:ro.data.large_tcp_window_size=true
 service battery_monitor /system/bin/battery_monitor
     user system
     group system
-    disabled
 
 service ril-daemon2 /system/bin/rild -c 2
     class main
@@ -1030,13 +964,11 @@ service ril-daemon3 /system/bin/rild -c 3
     socket rild3 stream 660 root radio
     socket rild-debug3 stream 660 radio system
     user root
-    disabled
     group radio cache inet misc audio sdcard_r sdcard_rw diag qcom_diag log
 
 service usb_uicc_enable /system/bin/sh /system/etc/init.qcom.uicc.sh
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 service usb_uicc_daemon /system/bin/usb_uicc_client
@@ -1052,23 +984,20 @@ on property:sys.usb_uicc.enabled=0
     start usb_uicc_enable
 
 service profiler_daemon /system/bin/profiler_daemon
-    class late_start
+    class main
     user root
     group root
-    disabled
 
 service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
-    class late_start
+    class main
 
 # fusewrapped external sdcard daemon running as media_rw (1023)
 service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
-    class late_start
-    disabled
+    class main
 
 # fusewrapped external sdcard daemon running as media_rw (1023)
 service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk0 /storage/usbdisk0
-    class late_start
-    disabled
+    class main
 
 on property:ro.fuse_sdcard=true
     start sdcard
@@ -1080,22 +1009,19 @@ on nonencrypted
 service hcidump /system/bin/sh /system/etc/hcidump.sh
     user bluetooth
     group bluetooth system net_bt_admin net_admin
-    disabled
     oneshot
 
 service charger /charger
     class charger
 
 service ssr_diag /system/bin/ssr_diag
-    class late_start
+    class main
     user system
     group system
-    disabled
 
 service hvdcp /system/bin/hvdcp
     class core
     user root
-    disabled
 
 on property:persist.usb.hvdcp.detect=true
     start hvdcp
@@ -1103,10 +1029,8 @@ on property:persist.usb.hvdcp.detect=true
 service charger_monitor /system/bin/charger_monitor
     user root
     group root
-    disabled
 
 service qbcharger /charger -m 1
-    disabled
     oneshot
 
 on property:sys.qbcharger.enable=true
@@ -1116,23 +1040,20 @@ on property:sys.qbcharger.enable=false
     stop qbcharger
 
 service diag_mdlog_start /system/bin/diag_mdlog
-    class late_start
+    class main
     user sdcard_rw
     group system qcom_diag sdcard_rw sdcard_r media_rw
-    disabled
     oneshot
 
 service diag_mdlog_stop /system/bin/diag_mdlog -k
-    class late_start
+    class main
     user sdcard_rw
     group system qcom_diag sdcard_rw sdcard_r media_rw
-    disabled
     oneshot
 
 service qlogd /system/xbin/qlogd
     socket qlogd stream 0662 system system
     class main
-    disabled
 on property:persist.sys.qlogd=1
     start qlogd
 on property:persist.sys.qlogd=0
@@ -1158,34 +1079,31 @@ on property:sys.boot_completed=1
     start wv-prov
 
 service mocana-startup /system/bin/sh /system/etc/init.mocana.sh
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
-service p2p_supplicant /system/bin/wpa_supplicant \
-    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
-    -I/system/etc/wifi/p2p_supplicant_overlay.conf \
-    -puse_p2p_group_interface=1p2p_device=1 \
-    -m/data/misc/wifi/p2p_supplicant.conf \
+service p2p_supplicant /system/bin/wpa_supplicant
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf
+    -I/system/etc/wifi/p2p_supplicant_overlay.conf
+    -puse_p2p_group_interface=1p2p_device=1
+    -m/data/misc/wifi/p2p_supplicant.conf
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
-    disabled
     oneshot
 
-service wpa_supplicant /system/bin/wpa_supplicant \
-    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
-    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+service wpa_supplicant /system/bin/wpa_supplicant
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     class main
     socket wpa_wlan0 dgram 660 wifi wifi
-    disabled
     oneshot
 
 #start camera server as daemon
 service qcamerasvr /system/bin/mm-qcamera-daemon
-    class late_start
+    class main
     user camera
     group camera system inet input graphics
 
@@ -1197,7 +1115,6 @@ service qseecomd /system/bin/qseecomd
 service perfd /system/bin/perfd
     class main
     user root
-    disabled
 
 service per_mgr /system/bin/pm-service
     class core
@@ -1208,7 +1125,6 @@ service per_proxy /system/bin/pm-proxy
     class core
     user system
     group system net_raw
-    disabled
 
 on property:init.svc.per_mgr=running
     start per_proxy
@@ -1226,11 +1142,11 @@ service thermal-engine /system/bin/thermal-engine
 
 # Enable slimport cbl isr after boot completion.
 on property:init.svc.bootanim=stopped
-    write /sys/class/i2c-dev/i2c-5/device/5-0072/enable_irq 1
+    write /sys/class/i2c-dev/i2c-5/device/5-0072/enable_irq 0
     
 
 service time_daemon /system/bin/time_daemon
-   class late_start
+   class main
    user root
    group root
 
@@ -1240,50 +1156,42 @@ service adsprpcd /system/bin/adsprpcd
    group media
 
 service audiod /system/bin/audiod
-   class late_start
+   class main
    user system
    group system
 
 service usf_tester /system/bin/usf_tester
     user system
     group system inet
-    disabled
 
 service usf_epos /system/bin/usf_epos
     class main
     user system
     group system inet
-    disabled
 
 service usf_gesture /system/bin/usf_gesture
     user system
     group system inet
-    disabled
 
 service usf_sync_gesture /system/bin/usf_sync_gesture
     user system
     group system inet audio
-    disabled
 
 service usf_p2p /system/bin/usf_p2p
     user system
     group system inet
-    disabled
 
 service usf_hovering /system/bin/usf_hovering
     user system
     group system inet
-    disabled
 
 service usf_proximity /system/bin/usf_proximity
     user system
     group system inet
-    disabled
 
 service usf-post-boot /system/bin/sh /system/etc/usf_post_boot.sh
-    class late_start
+    class main
     user root
-    disabled
     oneshot
 
 on property:init.svc.bootanim=stopped
@@ -1293,7 +1201,6 @@ service imscmservice /system/bin/imscmservice
    class main
    user system
    group radio net_raw diag qcom_diag log
-   disabled
 
 on property:sys.ims.DATA_DAEMON_STATUS=1
    start imscmservice
@@ -1326,13 +1233,11 @@ on property:init.svc.bootanim=running
 service qb_offmode_alarm /system/bin/qb_offmode_alarm
     class main
     user root
-    disabled
     oneshot
 
 service zchgd_offmode /system/bin/zchgd -pseudooffmode -autostop -poffmodewarn
     user root
     group root graphics
-    disabled
 
 service conn_init /system/bin/hwaddrs
     class core
@@ -1346,23 +1251,3 @@ on property:init.svc.conn_init=stopped
     chown system wifi /data/misc/wifi/config
     chmod 644 /data/misc/bdaddr
     chown bluetooth bluetooth /data/misc/bdaddr
-
-on property:persist.service.criticaltemp=1
-   write /sys/kernel/debug/spmi/spmi-0/address 0x00867
-   write /sys/kernel/debug/spmi/spmi-0/data 0
-   write /sys/kernel/debug/spmi/spmi-0/address 0x20867
-   write /sys/kernel/debug/spmi/spmi-0/data 0
-   write /sys/module/msm_thermal/parameters/reset_temp 170
-   write /sys/devices/virtual/thermal/thermal_zone2/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone3/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone4/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone5/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone6/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone7/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone8/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone9/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone10/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone11/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone12/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone13/ctrl_crit_temp 1
-   write /sys/devices/virtual/thermal/thermal_zone14/ctrl_crit_temp 1
